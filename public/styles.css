@@ -33,6 +33,13 @@ header h1 {
   color: #5c5146;
 }
 
+.anon-note {
+  margin: -12px 0 24px;
+  color: #3b342d;
+  font-size: 14px;
+  max-width: 640px;
+}
+
 .version {
   position: absolute;
   top: 16px;

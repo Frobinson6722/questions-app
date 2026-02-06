@@ -8,6 +8,11 @@ const adminUsername = process.env.ADMIN_USERNAME || "Frobinson6722";
 const adminPassword = process.env.ADMIN_PASSWORD || "3rdeyeEsg!";
 const dbPath = process.env.DB_PATH || "questions.db";
 const db = new Database(dbPath);
+const packageInfo = require("./package.json");
+const buildId = process.env.SOURCE_VERSION
+  || process.env.GIT_SHA
+  || process.env.KOYEB_GIT_SHA
+  || Date.now().toString(36);
 
 app.use(express.json());
 app.use(express.static("public"));
@@ -93,6 +98,13 @@ app.post("/vote", (req, res) => {
 app.get("/questions", (_req, res) => {
   const sort = String(_req.query?.sort || "top").toLowerCase();
   return res.json(listQuestions(sort));
+});
+
+app.get("/version", (_req, res) => {
+  return res.json({
+    version: packageInfo.version,
+    build: buildId,
+  });
 });
 
 function isAdmin(req) {

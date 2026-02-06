@@ -13,6 +13,7 @@ const adminClearBtn = document.getElementById("admin-clear");
 const adminStatus = document.getElementById("admin-status");
 const adminToggle = document.getElementById("admin-toggle");
 const adminSection = document.querySelector(".admin");
+const versionLabel = document.getElementById("version-label");
 
 let refreshTimer = null;
 let isRefreshing = false;
@@ -244,6 +245,22 @@ function startAutoRefresh() {
   refreshTimer = setInterval(fetchQuestions, 5000);
 }
 
+async function loadVersion() {
+  if (!versionLabel) return;
+  try {
+    const response = await fetch("/version");
+    if (!response.ok) throw new Error("Version fetch failed");
+    const data = await response.json();
+    const buildShort = data.build ? String(data.build).slice(0, 7) : "";
+    versionLabel.textContent = buildShort
+      ? `v${data.version} • ${buildShort}`
+      : `v${data.version}`;
+  } catch (error) {
+    console.error(error);
+  }
+}
+
 setCharCount();
 fetchQuestions();
 startAutoRefresh();
+loadVersion();
