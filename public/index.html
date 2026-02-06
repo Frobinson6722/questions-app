@@ -9,8 +9,10 @@
   <body>
     <main class="app">
       <header>
-        <h1>Questions</h1>
-        <p class="subtitle">Post and vote on questions in real time.</p>
+        <h1>Honest Questions</h1>
+        <p class="subtitle">
+          Have a question for leadership? Post and vote on questions in real time.
+        </p>
       </header>
       <p class="anon-note">
         All questions are 100% anonymous. The purpose is to make anyone
@@ -42,6 +44,16 @@
             <button id="refresh-btn" type="button">Refresh</button>
           </div>
         </div>
+        <table class="filter-guide" aria-label="Filter descriptions">
+          <tr>
+            <th>Top</th>
+            <td>Highest votes overall.</td>
+            <th>Recent</th>
+            <td>Newest questions first.</td>
+            <th>Lowest</th>
+            <td>Lowest score first.</td>
+          </tr>
+        </table>
       </section>
 
       <section>
@@ -78,9 +90,23 @@
       <li class="question">
         <div class="text"></div>
         <div class="actions">
-          <button class="vote" data-direction="up">Upvote</button>
+          <button class="vote" data-direction="up" aria-label="Upvote">
+            <span class="icon" aria-hidden="true">
+              <svg viewBox="0 0 24 24" role="img" focusable="false">
+                <path d="M2 10h4v12H2zM8 10l5.5-7.5c.6-.8 1.6-1.2 2.6-1l.2.1c.8.3 1.3 1.1 1.2 2l-.6 5.4H22c1.1 0 2 .9 2 2 0 .2 0 .4-.1.6l-2.5 8.4c-.3.9-1.1 1.5-2.1 1.5H8V10z"/>
+              </svg>
+            </span>
+            Upvote
+          </button>
           <div class="score"></div>
-          <button class="vote" data-direction="down">Downvote</button>
+          <button class="vote" data-direction="down" aria-label="Downvote">
+            <span class="icon" aria-hidden="true">
+              <svg viewBox="0 0 24 24" role="img" focusable="false">
+                <path d="M2 2h4v12H2zM8 14l5.5 7.5c.6.8 1.6 1.2 2.6 1l.2-.1c.8-.3 1.3-1.1 1.2-2l-.6-5.4H22c1.1 0 2-.9 2-2 0-.2 0-.4-.1-.6L21.4 3.4c-.3-.9-1.1-1.5-2.1-1.5H8v12z"/>
+              </svg>
+            </span>
+            Downvote
+          </button>
           <button class="admin-delete" data-action="delete">Delete</button>
         </div>
       </li>
