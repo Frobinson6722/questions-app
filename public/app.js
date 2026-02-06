@@ -17,6 +17,9 @@ const adminSection = document.querySelector(".admin");
 let refreshTimer = null;
 let isRefreshing = false;
 let adminToken = localStorage.getItem("adminToken");
+let upvotedIds = new Set(
+  JSON.parse(localStorage.getItem("upvotedIds") || "[]")
+);
 
 function setCharCount() {
   charCount.textContent = `${input.value.length} / 280`;
@@ -160,7 +163,15 @@ list.addEventListener("click", async (event) => {
     const direction = button.dataset.direction;
     if (!direction) return;
     try {
+      if (direction === "up" && upvotedIds.has(id)) {
+        alert("Only 1 upvote allowed per question.");
+        return;
+      }
       await vote(id, direction);
+      if (direction === "up") {
+        upvotedIds.add(id);
+        localStorage.setItem("upvotedIds", JSON.stringify([...upvotedIds]));
+      }
       await fetchQuestions();
     } catch (error) {
       alert(error.message);
