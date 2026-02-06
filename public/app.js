@@ -18,9 +18,7 @@ const versionLabel = document.getElementById("version-label");
 let refreshTimer = null;
 let isRefreshing = false;
 let adminToken = localStorage.getItem("adminToken");
-let upvotedIds = new Set(
-  JSON.parse(localStorage.getItem("upvotedIds") || "[]")
-);
+let voteStates = JSON.parse(localStorage.getItem("voteStates") || "{}");
 
 function setCharCount() {
   charCount.textContent = `${input.value.length} / 280`;
@@ -52,6 +50,11 @@ function renderQuestions(questions) {
     item.dataset.id = String(question.id);
     node.querySelector(".text").textContent = question.text;
     node.querySelector(".score").textContent = String(question.votes);
+    const currentState = voteStates[question.id] || "none";
+    const upBtn = node.querySelector('.vote[data-direction="up"]');
+    const downBtn = node.querySelector('.vote[data-direction="down"]');
+    if (upBtn) upBtn.disabled = currentState === "up";
+    if (downBtn) downBtn.disabled = currentState === "down";
     const deleteBtn = node.querySelector(".admin-delete");
     if (adminToken) {
       deleteBtn.style.display = "inline-flex";
@@ -161,18 +164,17 @@ list.addEventListener("click", async (event) => {
   if (!id) return;
 
   if (button) {
-    const direction = button.dataset.direction;
-    if (!direction) return;
+      const direction = button.dataset.direction;
+      if (!direction) return;
     try {
-      if (direction === "up" && upvotedIds.has(id)) {
-        alert("Only 1 upvote allowed per question.");
+      const currentState = voteStates[id] || "none";
+      if (direction === currentState) {
+        alert("You already voted that way for this question.");
         return;
       }
       await vote(id, direction);
-      if (direction === "up") {
-        upvotedIds.add(id);
-        localStorage.setItem("upvotedIds", JSON.stringify([...upvotedIds]));
-      }
+      voteStates[id] = direction;
+      localStorage.setItem("voteStates", JSON.stringify(voteStates));
       await fetchQuestions();
     } catch (error) {
       alert(error.message);

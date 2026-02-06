@@ -177,6 +177,11 @@ select {
   gap: 6px;
 }
 
+.vote:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
 .vote:hover {
   background: #e0d4c4;
 }
