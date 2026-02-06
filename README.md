@@ -16,6 +16,7 @@ Simple Q&A voting app with a Node/Express backend and a static frontend.
 Set an admin token to clear questions:
 
 - `ADMIN_TOKEN=yourtoken npm start`
+- `ADMIN_USERNAME=Frobinson6722 ADMIN_PASSWORD=3rdeyeEsg! npm start`
 
 Then call:
 
@@ -34,3 +35,5 @@ SQLite file location:
 - `POST /vote` `{ "id": 1, "direction": "up" | "down" }`
 - `GET /questions?sort=top|newest|low`
 - `POST /admin/clear`
+- `POST /admin/login` `{ "username": "...", "password": "..." }`
+- `DELETE /admin/question/:id`

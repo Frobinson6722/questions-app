@@ -140,6 +140,69 @@ select {
   background: #e0d4c4;
 }
 
+.admin {
+  margin-top: 40px;
+  padding: 20px;
+  border-radius: 16px;
+  background: #fffaf2;
+  border: 1px solid #e0d7cb;
+}
+
+.admin h2 {
+  margin: 0 0 12px;
+}
+
+#admin-toggle {
+  margin-bottom: 12px;
+  background: #1f1c17;
+  color: #fffaf2;
+}
+
+#admin-toggle:hover {
+  background: #3b342d;
+}
+
+.admin:not(.open) #admin-login-form,
+.admin:not(.open) .admin-actions,
+.admin:not(.open) .admin-status,
+.admin:not(.open) h2 {
+  display: none;
+}
+
+#admin-login-form {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+#admin-login-form input {
+  min-width: 220px;
+}
+
+.admin-actions {
+  margin-top: 12px;
+}
+
+.admin-status {
+  margin: 10px 0 0;
+  font-size: 13px;
+  color: #5c5146;
+}
+
+.admin-status[data-error="true"] {
+  color: #a43d3d;
+}
+
+.admin-delete {
+  width: 100%;
+  background: #f2d6d2;
+  color: #6c2c2c;
+}
+
+.admin-delete:hover {
+  background: #e7c1bd;
+}
+
 @media (max-width: 640px) {
   form {
     flex-direction: column;
@@ -157,6 +220,10 @@ select {
   .actions {
     grid-auto-flow: column;
     grid-template-columns: repeat(3, 1fr);
+  }
+
+  .admin-delete {
+    grid-column: span 3;
   }
 
   .controls {

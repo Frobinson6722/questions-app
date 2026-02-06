@@ -4,6 +4,8 @@ const Database = require("better-sqlite3");
 const app = express();
 const port = process.env.PORT || 3000;
 const adminToken = process.env.ADMIN_TOKEN || "devtoken";
+const adminUsername = process.env.ADMIN_USERNAME || "Frobinson6722";
+const adminPassword = process.env.ADMIN_PASSWORD || "3rdeyeEsg!";
 const dbPath = process.env.DB_PATH || "questions.db";
 const db = new Database(dbPath);
 
@@ -34,6 +36,7 @@ const listLowest = db.prepare(
   "SELECT * FROM questions ORDER BY votes ASC, created_at DESC"
 );
 const clearAll = db.prepare("DELETE FROM questions");
+const deleteById = db.prepare("DELETE FROM questions WHERE id = ?");
 
 function normalizeQuestion(row) {
   if (!row) return null;
@@ -102,11 +105,35 @@ function isAdmin(req) {
   return token && token === adminToken;
 }
 
+app.post("/admin/login", (req, res) => {
+  const username = String(req.body?.username || "");
+  const password = String(req.body?.password || "");
+  if (username !== adminUsername || password !== adminPassword) {
+    return res.status(401).json({ error: "Invalid credentials." });
+  }
+  return res.json({ token: adminToken });
+});
+
 app.post("/admin/clear", (req, res) => {
   if (!isAdmin(req)) {
     return res.status(401).json({ error: "Unauthorized." });
   }
   clearAll.run();
+  return res.json({ ok: true });
+});
+
+app.delete("/admin/question/:id", (req, res) => {
+  if (!isAdmin(req)) {
+    return res.status(401).json({ error: "Unauthorized." });
+  }
+  const id = Number(req.params.id);
+  if (!Number.isInteger(id)) {
+    return res.status(400).json({ error: "Valid question id is required." });
+  }
+  const info = deleteById.run(id);
+  if (info.changes === 0) {
+    return res.status(404).json({ error: "Question not found." });
+  }
   return res.json({ ok: true });
 });
 

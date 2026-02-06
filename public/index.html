@@ -42,6 +42,31 @@
       <section>
         <ul id="questions" class="questions"></ul>
       </section>
+
+      <section class="admin">
+        <button id="admin-toggle" type="button" class="admin-toggle">Admin</button>
+        <h2>Admin</h2>
+        <form id="admin-login-form">
+          <input
+            id="admin-username"
+            type="text"
+            placeholder="Username"
+            autocomplete="username"
+          />
+          <input
+            id="admin-password"
+            type="password"
+            placeholder="Admin password"
+            autocomplete="current-password"
+          />
+          <button type="submit">Login</button>
+          <button id="admin-logout" type="button">Logout</button>
+        </form>
+        <div class="admin-actions">
+          <button id="admin-clear" type="button">Clear all questions</button>
+        </div>
+        <p id="admin-status" class="admin-status"></p>
+      </section>
     </main>
 
     <template id="question-item-template">
@@ -51,6 +76,7 @@
           <button class="vote" data-direction="up">Upvote</button>
           <div class="score"></div>
           <button class="vote" data-direction="down">Downvote</button>
+          <button class="admin-delete" data-action="delete">Delete</button>
         </div>
       </li>
     </template>

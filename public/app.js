@@ -5,9 +5,18 @@ const template = document.getElementById("question-item-template");
 const refreshBtn = document.getElementById("refresh-btn");
 const charCount = document.getElementById("char-count");
 const sortSelect = document.getElementById("sort-select");
+const adminLoginForm = document.getElementById("admin-login-form");
+const adminUsernameInput = document.getElementById("admin-username");
+const adminPasswordInput = document.getElementById("admin-password");
+const adminLogoutBtn = document.getElementById("admin-logout");
+const adminClearBtn = document.getElementById("admin-clear");
+const adminStatus = document.getElementById("admin-status");
+const adminToggle = document.getElementById("admin-toggle");
+const adminSection = document.querySelector(".admin");
 
 let refreshTimer = null;
 let isRefreshing = false;
+let adminToken = localStorage.getItem("adminToken");
 
 function setCharCount() {
   charCount.textContent = `${input.value.length} / 280`;
@@ -39,6 +48,12 @@ function renderQuestions(questions) {
     item.dataset.id = String(question.id);
     node.querySelector(".text").textContent = question.text;
     node.querySelector(".score").textContent = String(question.votes);
+    const deleteBtn = node.querySelector(".admin-delete");
+    if (adminToken) {
+      deleteBtn.style.display = "inline-flex";
+    } else {
+      deleteBtn.style.display = "none";
+    }
     fragment.appendChild(node);
   });
 
@@ -73,6 +88,51 @@ async function vote(id, direction) {
   return response.json();
 }
 
+async function adminLogin(password) {
+  const username = adminUsernameInput.value.trim();
+  const response = await fetch("/admin/login", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ username, password }),
+  });
+
+  if (!response.ok) {
+    const error = await response.json().catch(() => ({ error: "Error" }));
+    throw new Error(error.error || "Login failed");
+  }
+
+  return response.json();
+}
+
+async function adminClear() {
+  const response = await fetch("/admin/clear", {
+    method: "POST",
+    headers: { "x-admin-token": adminToken },
+  });
+
+  if (!response.ok) {
+    const error = await response.json().catch(() => ({ error: "Error" }));
+    throw new Error(error.error || "Clear failed");
+  }
+}
+
+async function adminDelete(id) {
+  const response = await fetch(`/admin/question/${id}`, {
+    method: "DELETE",
+    headers: { "x-admin-token": adminToken },
+  });
+
+  if (!response.ok) {
+    const error = await response.json().catch(() => ({ error: "Error" }));
+    throw new Error(error.error || "Delete failed");
+  }
+}
+
+function setAdminStatus(message, isError = false) {
+  adminStatus.textContent = message;
+  adminStatus.dataset.error = isError ? "true" : "false";
+}
+
 form.addEventListener("submit", async (event) => {
   event.preventDefault();
   const text = input.value.trim();
@@ -90,26 +150,83 @@ form.addEventListener("submit", async (event) => {
 
 list.addEventListener("click", async (event) => {
   const button = event.target.closest(".vote");
-  if (!button) return;
-
+  const deleteBtn = event.target.closest(".admin-delete");
   const item = event.target.closest(".question");
   if (!item) return;
-
   const id = Number(item.dataset.id);
-  const direction = button.dataset.direction;
-  if (!id || !direction) return;
+  if (!id) return;
 
-  try {
-    await vote(id, direction);
-    await fetchQuestions();
-  } catch (error) {
-    alert(error.message);
+  if (button) {
+    const direction = button.dataset.direction;
+    if (!direction) return;
+    try {
+      await vote(id, direction);
+      await fetchQuestions();
+    } catch (error) {
+      alert(error.message);
+    }
+    return;
+  }
+
+  if (deleteBtn && adminToken) {
+    const confirmDelete = confirm("Delete this question?");
+    if (!confirmDelete) return;
+    try {
+      await adminDelete(id);
+      await fetchQuestions();
+    } catch (error) {
+      alert(error.message);
+    }
   }
 });
 
 refreshBtn.addEventListener("click", fetchQuestions);
 input.addEventListener("input", setCharCount);
 sortSelect.addEventListener("change", fetchQuestions);
+
+adminLoginForm.addEventListener("submit", async (event) => {
+  event.preventDefault();
+  const username = adminUsernameInput.value.trim();
+  const password = adminPasswordInput.value;
+  if (!username || !password) return;
+  try {
+    const result = await adminLogin(password);
+    adminToken = result.token;
+    localStorage.setItem("adminToken", adminToken);
+    adminUsernameInput.value = "";
+    adminPasswordInput.value = "";
+    setAdminStatus("Logged in as admin.");
+    await fetchQuestions();
+  } catch (error) {
+    setAdminStatus(error.message, true);
+  }
+});
+
+adminLogoutBtn.addEventListener("click", async () => {
+  adminToken = null;
+  localStorage.removeItem("adminToken");
+  setAdminStatus("Logged out.");
+  await fetchQuestions();
+});
+
+adminToggle.addEventListener("click", () => {
+  adminSection.classList.toggle("open");
+});
+
+adminClearBtn.addEventListener("click", async () => {
+  if (!adminToken) {
+    setAdminStatus("Login required.", true);
+    return;
+  }
+  const confirmClear = confirm("Clear all questions?");
+  if (!confirmClear) return;
+  try {
+    await adminClear();
+    await fetchQuestions();
+  } catch (error) {
+    setAdminStatus(error.message, true);
+  }
+});
 
 function startAutoRefresh() {
   if (refreshTimer) clearInterval(refreshTimer);
