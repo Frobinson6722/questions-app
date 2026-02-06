@@ -181,6 +181,24 @@ select {
   background: #e0d4c4;
 }
 
+.vote[data-direction="up"] {
+  background: #e6f4ea;
+  color: #245b2a;
+}
+
+.vote[data-direction="up"]:hover {
+  background: #d5ecd9;
+}
+
+.vote[data-direction="down"] {
+  background: #fde8e8;
+  color: #7a2e2e;
+}
+
+.vote[data-direction="down"]:hover {
+  background: #f7d3d3;
+}
+
 .vote .icon {
   display: inline-flex;
   width: 16px;
