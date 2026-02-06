@@ -19,6 +19,7 @@ body {
   max-width: 760px;
   margin: 0 auto;
   padding: 48px 24px 80px;
+  position: relative;
 }
 
 header h1 {
@@ -30,6 +31,15 @@ header h1 {
 .subtitle {
   margin: 0 0 32px;
   color: #5c5146;
+}
+
+.version {
+  position: absolute;
+  top: 16px;
+  right: 24px;
+  font-size: 12px;
+  font-style: italic;
+  color: #1f1c17;
 }
 
 .composer {
