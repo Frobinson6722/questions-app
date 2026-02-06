@@ -1,0 +1,60 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Questions</title>
+    <link rel="stylesheet" href="/styles.css" />
+  </head>
+  <body>
+    <main class="app">
+      <header>
+        <h1>Questions</h1>
+        <p class="subtitle">Post and vote on questions in real time.</p>
+      </header>
+
+      <section class="composer">
+        <form id="question-form">
+          <input
+            id="question-input"
+            type="text"
+            name="question"
+            placeholder="Ask a question"
+            maxlength="280"
+            autocomplete="off"
+            required
+          />
+          <button type="submit">Submit</button>
+        </form>
+        <div class="meta">
+          <span id="char-count">0 / 280</span>
+          <div class="controls">
+            <select id="sort-select" aria-label="Sort questions">
+              <option value="top" selected>Top</option>
+              <option value="newest">Newest</option>
+              <option value="low">Lowest score</option>
+            </select>
+            <button id="refresh-btn" type="button">Refresh</button>
+          </div>
+        </div>
+      </section>
+
+      <section>
+        <ul id="questions" class="questions"></ul>
+      </section>
+    </main>
+
+    <template id="question-item-template">
+      <li class="question">
+        <div class="text"></div>
+        <div class="actions">
+          <button class="vote" data-direction="up">Upvote</button>
+          <div class="score"></div>
+          <button class="vote" data-direction="down">Downvote</button>
+        </div>
+      </li>
+    </template>
+
+    <script src="/app.js"></script>
+  </body>
+</html>
