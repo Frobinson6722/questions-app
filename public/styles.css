@@ -167,6 +167,14 @@ select {
   color: #1f1c17;
 }
 
+.score.bump-up {
+  animation: scoreUp 350ms ease-out;
+}
+
+.score.bump-down {
+  animation: scoreDown 350ms ease-out;
+}
+
 .vote {
   width: 100%;
   background: #efe6d9;
@@ -184,6 +192,38 @@ select {
 
 .vote:hover {
   background: #e0d4c4;
+}
+
+.vote.pulse-up {
+  animation: pulseUp 300ms ease-out;
+}
+
+.vote.pulse-down {
+  animation: pulseDown 300ms ease-out;
+}
+
+@keyframes scoreUp {
+  0% { transform: scale(1); color: #1f1c17; }
+  50% { transform: scale(1.2); color: #245b2a; }
+  100% { transform: scale(1); color: #1f1c17; }
+}
+
+@keyframes scoreDown {
+  0% { transform: scale(1); color: #1f1c17; }
+  50% { transform: scale(1.2); color: #7a2e2e; }
+  100% { transform: scale(1); color: #1f1c17; }
+}
+
+@keyframes pulseUp {
+  0% { transform: scale(1); }
+  50% { transform: scale(1.06); }
+  100% { transform: scale(1); }
+}
+
+@keyframes pulseDown {
+  0% { transform: scale(1); }
+  50% { transform: scale(1.06); }
+  100% { transform: scale(1); }
 }
 
 .vote[data-direction="up"] {

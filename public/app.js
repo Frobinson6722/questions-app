@@ -164,8 +164,8 @@ list.addEventListener("click", async (event) => {
   if (!id) return;
 
   if (button) {
-      const direction = button.dataset.direction;
-      if (!direction) return;
+    const direction = button.dataset.direction;
+    if (!direction) return;
     try {
       const currentState = voteStates[id] || "none";
       if (direction === currentState) {
@@ -175,6 +175,23 @@ list.addEventListener("click", async (event) => {
       await vote(id, direction);
       voteStates[id] = direction;
       localStorage.setItem("voteStates", JSON.stringify(voteStates));
+      const scoreEl = item.querySelector(".score");
+      if (scoreEl) {
+        scoreEl.classList.remove("bump-up", "bump-down");
+        scoreEl.classList.add(direction === "up" ? "bump-up" : "bump-down");
+        scoreEl.addEventListener(
+          "animationend",
+          () => scoreEl.classList.remove("bump-up", "bump-down"),
+          { once: true }
+        );
+      }
+      button.classList.remove("pulse-up", "pulse-down");
+      button.classList.add(direction === "up" ? "pulse-up" : "pulse-down");
+      button.addEventListener(
+        "animationend",
+        () => button.classList.remove("pulse-up", "pulse-down"),
+        { once: true }
+      );
       await fetchQuestions();
     } catch (error) {
       alert(error.message);
