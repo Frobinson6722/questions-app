@@ -22,12 +22,11 @@ Then call:
 
 - `POST /admin/clear` with header `x-admin-token: yourtoken` (or `Authorization: Bearer yourtoken`).
 
-## Persistence
+## Database
 
-SQLite file location:
+This app uses PostgreSQL. Set:
 
-- Default: `questions.db` in the project root.
-- Override: `DB_PATH=/path/to/questions.db`
+- `DATABASE_URL=postgres://user:pass@host:5432/dbname`
 
 ## API
 

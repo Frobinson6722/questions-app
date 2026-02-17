@@ -1,13 +1,12 @@
 const express = require("express");
-const Database = require("better-sqlite3");
+const { Pool } = require("pg");
 
 const app = express();
 const port = process.env.PORT || 3000;
 const adminToken = process.env.ADMIN_TOKEN || "devtoken";
 const adminUsername = process.env.ADMIN_USERNAME || "Frobinson6722";
 const adminPassword = process.env.ADMIN_PASSWORD || "3rdeyeEsg!";
-const dbPath = process.env.DB_PATH || "questions.db";
-const db = new Database(dbPath);
+const databaseUrl = process.env.DATABASE_URL || "";
 const packageInfo = require("./package.json");
 const buildId = process.env.SOURCE_VERSION
   || process.env.GIT_SHA
@@ -17,31 +16,26 @@ const buildId = process.env.SOURCE_VERSION
 app.use(express.json());
 app.use(express.static("public"));
 
-db.exec(`
-  CREATE TABLE IF NOT EXISTS questions (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    text TEXT NOT NULL,
-    votes INTEGER NOT NULL DEFAULT 0,
-    created_at INTEGER NOT NULL
-  );
-`);
+if (!databaseUrl) {
+  console.error("DATABASE_URL is not set. Set it to your Postgres connection.");
+  process.exit(1);
+}
 
-const insertQuestion = db.prepare(
-  "INSERT INTO questions (text, votes, created_at) VALUES (?, 0, ?)"
-);
-const findQuestionById = db.prepare("SELECT * FROM questions WHERE id = ?");
-const updateVotes = db.prepare("UPDATE questions SET votes = ? WHERE id = ?");
-const listTop = db.prepare(
-  "SELECT * FROM questions ORDER BY votes DESC, created_at DESC"
-);
-const listNewest = db.prepare(
-  "SELECT * FROM questions ORDER BY created_at DESC"
-);
-const listLowest = db.prepare(
-  "SELECT * FROM questions ORDER BY votes ASC, created_at DESC"
-);
-const clearAll = db.prepare("DELETE FROM questions");
-const deleteById = db.prepare("DELETE FROM questions WHERE id = ?");
+const pool = new Pool({
+  connectionString: databaseUrl,
+  ssl: { rejectUnauthorized: false },
+});
+
+async function initDb() {
+  await pool.query(`
+    CREATE TABLE IF NOT EXISTS questions (
+      id SERIAL PRIMARY KEY,
+      text TEXT NOT NULL,
+      votes INTEGER NOT NULL DEFAULT 0,
+      created_at BIGINT NOT NULL
+    );
+  `);
+}
 
 function normalizeQuestion(row) {
   if (!row) return null;
@@ -49,14 +43,16 @@ function normalizeQuestion(row) {
     id: row.id,
     text: row.text,
     votes: row.votes,
-    createdAt: row.created_at,
+    createdAt: Number(row.created_at),
   };
 }
 
-function listQuestions(sort) {
-  if (sort === "newest") return listNewest.all().map(normalizeQuestion);
-  if (sort === "low") return listLowest.all().map(normalizeQuestion);
-  return listTop.all().map(normalizeQuestion);
+async function listQuestions(sort) {
+  let orderBy = "votes DESC, created_at DESC";
+  if (sort === "newest") orderBy = "created_at DESC";
+  if (sort === "low") orderBy = "votes ASC, created_at DESC";
+  const result = await pool.query(`SELECT * FROM questions ORDER BY ${orderBy}`);
+  return result.rows.map(normalizeQuestion);
 }
 
 app.post("/question", (req, res) => {
@@ -69,9 +65,16 @@ app.post("/question", (req, res) => {
   }
 
   const createdAt = Date.now();
-  const info = insertQuestion.run(text, createdAt);
-  const question = findQuestionById.get(info.lastInsertRowid);
-  return res.status(201).json(normalizeQuestion(question));
+  pool
+    .query(
+      "INSERT INTO questions (text, votes, created_at) VALUES ($1, 0, $2) RETURNING *",
+      [text, createdAt]
+    )
+    .then((result) => res.status(201).json(normalizeQuestion(result.rows[0])))
+    .catch((error) => {
+      console.error(error);
+      res.status(500).json({ error: "Failed to save question." });
+    });
 });
 
 app.post("/vote", (req, res) => {
@@ -85,19 +88,32 @@ app.post("/vote", (req, res) => {
     return res.status(400).json({ error: "Direction must be 'up' or 'down'." });
   }
 
-  const question = findQuestionById.get(id);
-  if (!question) {
-    return res.status(404).json({ error: "Question not found." });
-  }
-
-  const nextVotes = question.votes + (direction === "up" ? 1 : -1);
-  updateVotes.run(nextVotes, question.id);
-  return res.json({ id: question.id, votes: nextVotes });
+  const delta = direction === "up" ? 1 : -1;
+  pool
+    .query(
+      "UPDATE questions SET votes = votes + $1 WHERE id = $2 RETURNING id, votes",
+      [delta, id]
+    )
+    .then((result) => {
+      if (result.rowCount === 0) {
+        return res.status(404).json({ error: "Question not found." });
+      }
+      return res.json(result.rows[0]);
+    })
+    .catch((error) => {
+      console.error(error);
+      res.status(500).json({ error: "Vote failed." });
+    });
 });
 
 app.get("/questions", (_req, res) => {
   const sort = String(_req.query?.sort || "top").toLowerCase();
-  return res.json(listQuestions(sort));
+  listQuestions(sort)
+    .then((questions) => res.json(questions))
+    .catch((error) => {
+      console.error(error);
+      res.status(500).json({ error: "Failed to load questions." });
+    });
 });
 
 app.get("/version", (_req, res) => {
@@ -130,8 +146,13 @@ app.post("/admin/clear", (req, res) => {
   if (!isAdmin(req)) {
     return res.status(401).json({ error: "Unauthorized." });
   }
-  clearAll.run();
-  return res.json({ ok: true });
+  pool
+    .query("DELETE FROM questions")
+    .then(() => res.json({ ok: true }))
+    .catch((error) => {
+      console.error(error);
+      res.status(500).json({ error: "Clear failed." });
+    });
 });
 
 app.delete("/admin/question/:id", (req, res) => {
@@ -142,16 +163,30 @@ app.delete("/admin/question/:id", (req, res) => {
   if (!Number.isInteger(id)) {
     return res.status(400).json({ error: "Valid question id is required." });
   }
-  const info = deleteById.run(id);
-  if (info.changes === 0) {
-    return res.status(404).json({ error: "Question not found." });
-  }
-  return res.json({ ok: true });
+  pool
+    .query("DELETE FROM questions WHERE id = $1", [id])
+    .then((result) => {
+      if (result.rowCount === 0) {
+        return res.status(404).json({ error: "Question not found." });
+      }
+      return res.json({ ok: true });
+    })
+    .catch((error) => {
+      console.error(error);
+      res.status(500).json({ error: "Delete failed." });
+    });
 });
 
-app.listen(port, () => {
-  console.log(`Server running on http://localhost:${port}`);
-  if (!process.env.ADMIN_TOKEN) {
-    console.log("ADMIN_TOKEN not set; using default 'devtoken'.");
-  }
-});
+initDb()
+  .then(() => {
+    app.listen(port, () => {
+      console.log(`Server running on http://localhost:${port}`);
+      if (!process.env.ADMIN_TOKEN) {
+        console.log("ADMIN_TOKEN not set; using default 'devtoken'.");
+      }
+    });
+  })
+  .catch((error) => {
+    console.error("Failed to init database:", error);
+    process.exit(1);
+  });
