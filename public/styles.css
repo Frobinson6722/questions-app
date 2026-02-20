@@ -100,25 +100,6 @@ button:hover {
   align-items: center;
 }
 
-.filter-guide {
-  margin-top: 12px;
-  width: 100%;
-  border-collapse: collapse;
-  font-size: 12px;
-  color: #5c5146;
-}
-
-.filter-guide th,
-.filter-guide td {
-  padding: 4px 6px;
-  text-align: left;
-  border-bottom: 1px solid #efe6d9;
-  white-space: nowrap;
-}
-
-.filter-guide td {
-  color: #7a6f63;
-}
 
 select {
   padding: 8px 10px;
@@ -347,9 +328,4 @@ select {
     justify-content: flex-end;
   }
 
-  .filter-guide {
-    display: block;
-    overflow-x: auto;
-    white-space: nowrap;
-  }
 }
