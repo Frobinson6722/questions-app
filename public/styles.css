@@ -113,15 +113,24 @@ button:focus-visible {
 .meta {
   margin-top: 12px;
   display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
   justify-content: space-between;
   color: var(--md-on-surface-variant);
   font-size: 13px;
+}
+
+#char-count {
+  white-space: nowrap;
 }
 
 .controls {
   display: flex;
   gap: 10px;
   align-items: center;
+  flex-wrap: wrap;
+  justify-content: flex-end;
 }
 
 .sort-segmented {
@@ -400,7 +409,13 @@ button:focus-visible {
 
   .controls {
     width: 100%;
-    justify-content: flex-end;
+    justify-content: flex-start;
+  }
+
+  .meta {
+    align-items: flex-start;
+    flex-direction: column;
+    gap: 8px;
   }
 
 }
