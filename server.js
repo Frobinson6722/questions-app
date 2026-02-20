@@ -47,12 +47,30 @@ function normalizeQuestion(row) {
   };
 }
 
-async function listQuestions(sort) {
+async function listQuestions(sort, page, limit) {
   let orderBy = "votes DESC, created_at DESC";
   if (sort === "newest") orderBy = "created_at DESC";
+  if (sort === "oldest") orderBy = "created_at ASC";
   if (sort === "low") orderBy = "votes ASC, created_at DESC";
-  const result = await pool.query(`SELECT * FROM questions ORDER BY ${orderBy}`);
-  return result.rows.map(normalizeQuestion);
+  const safePage = Number.isInteger(page) && page > 0 ? page : 1;
+  const safeLimit = Number.isInteger(limit) && limit > 0 ? Math.min(limit, 20) : 20;
+  const countResult = await pool.query("SELECT COUNT(*)::int AS total FROM questions");
+  const totalItems = countResult.rows[0]?.total || 0;
+  const totalPages = Math.max(1, Math.ceil(totalItems / safeLimit));
+  const effectivePage = safePage > totalPages ? totalPages : safePage;
+  const offset = (effectivePage - 1) * safeLimit;
+  const itemsResult = await pool.query(
+    `SELECT * FROM questions ORDER BY ${orderBy} LIMIT $1 OFFSET $2`,
+    [safeLimit, offset]
+  );
+
+  return {
+    items: itemsResult.rows.map(normalizeQuestion),
+    page: effectivePage,
+    pageSize: safeLimit,
+    totalItems,
+    totalPages,
+  };
 }
 
 app.post("/question", (req, res) => {
@@ -108,8 +126,10 @@ app.post("/vote", (req, res) => {
 
 app.get("/questions", (_req, res) => {
   const sort = String(_req.query?.sort || "top").toLowerCase();
-  listQuestions(sort)
-    .then((questions) => res.json(questions))
+  const page = Number.parseInt(String(_req.query?.page || "1"), 10);
+  const limit = Number.parseInt(String(_req.query?.limit || "20"), 10);
+  listQuestions(sort, page, limit)
+    .then((payload) => res.json(payload))
     .catch((error) => {
       console.error(error);
       res.status(500).json({ error: "Failed to load questions." });

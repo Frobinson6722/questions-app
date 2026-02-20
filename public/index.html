@@ -35,18 +35,23 @@
         <div class="meta">
           <span id="char-count">0 / 280</span>
           <div class="controls">
-            <select id="sort-select" aria-label="Sort questions">
-              <option value="top" selected>📈 Top</option>
-              <option value="newest">🕒 Recent</option>
-              <option value="low">📉 Lowest</option>
-            </select>
-            <button id="refresh-btn" type="button">Refresh</button>
+            <div class="sort-segmented" role="group" aria-label="Sort questions">
+              <button class="sort-chip active" type="button" data-sort="top" aria-pressed="true">Top</button>
+              <button class="sort-chip" type="button" data-sort="newest" aria-pressed="false">Newest</button>
+              <button class="sort-chip" type="button" data-sort="oldest" aria-pressed="false">Oldest</button>
+            </div>
+            <button id="refresh-btn" class="button-tonal" type="button">Refresh</button>
           </div>
         </div>
       </section>
 
       <section>
         <ul id="questions" class="questions"></ul>
+        <div class="pagination" aria-label="Questions pagination">
+          <button id="prev-page-btn" type="button">Previous</button>
+          <span id="page-label" class="page-label">Page 1 of 1</span>
+          <button id="next-page-btn" type="button">Next</button>
+        </div>
       </section>
 
       <section class="admin">

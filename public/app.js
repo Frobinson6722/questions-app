@@ -4,7 +4,10 @@ const list = document.getElementById("questions");
 const template = document.getElementById("question-item-template");
 const refreshBtn = document.getElementById("refresh-btn");
 const charCount = document.getElementById("char-count");
-const sortSelect = document.getElementById("sort-select");
+const sortButtons = Array.from(document.querySelectorAll(".sort-chip"));
+const prevPageBtn = document.getElementById("prev-page-btn");
+const nextPageBtn = document.getElementById("next-page-btn");
+const pageLabel = document.getElementById("page-label");
 const adminLoginForm = document.getElementById("admin-login-form");
 const adminUsernameInput = document.getElementById("admin-username");
 const adminPasswordInput = document.getElementById("admin-password");
@@ -19,6 +22,9 @@ let refreshTimer = null;
 let isRefreshing = false;
 let adminToken = localStorage.getItem("adminToken");
 let voteStates = JSON.parse(localStorage.getItem("voteStates") || "{}");
+let currentPage = 1;
+const pageSize = 20;
+let currentSort = "top";
 
 function setCharCount() {
   charCount.textContent = `${input.value.length} / 280`;
@@ -28,16 +34,38 @@ async function fetchQuestions() {
   if (isRefreshing) return;
   isRefreshing = true;
   try {
-    const sort = sortSelect?.value || "top";
-    const response = await fetch(`/questions?sort=${encodeURIComponent(sort)}`);
+    const query = new URLSearchParams({
+      sort: currentSort,
+      page: String(currentPage),
+      limit: String(pageSize),
+    });
+    const response = await fetch(`/questions?${query.toString()}`);
     if (!response.ok) throw new Error("Failed to load questions");
-    const questions = await response.json();
-    renderQuestions(questions);
+    const payload = await response.json();
+    renderQuestions(payload.items || []);
+    updatePagination(payload.page || 1, payload.totalPages || 1, payload.totalItems || 0);
   } catch (error) {
     console.error(error);
   } finally {
     isRefreshing = false;
   }
+}
+
+function updatePagination(page, totalPages, totalItems) {
+  currentPage = Math.max(1, page);
+  const safeTotalPages = Math.max(1, totalPages);
+  pageLabel.textContent = `Page ${currentPage} of ${safeTotalPages} (${totalItems})`;
+  prevPageBtn.disabled = currentPage <= 1;
+  nextPageBtn.disabled = currentPage >= safeTotalPages;
+}
+
+function setSort(sort) {
+  currentSort = sort;
+  sortButtons.forEach((button) => {
+    const isActive = button.dataset.sort === sort;
+    button.classList.toggle("active", isActive);
+    button.setAttribute("aria-pressed", String(isActive));
+  });
 }
 
 function renderQuestions(questions) {
@@ -149,6 +177,7 @@ form.addEventListener("submit", async (event) => {
     await submitQuestion(text);
     input.value = "";
     setCharCount();
+    currentPage = 1;
     await fetchQuestions();
   } catch (error) {
     alert(error.message);
@@ -213,7 +242,24 @@ list.addEventListener("click", async (event) => {
 
 refreshBtn.addEventListener("click", fetchQuestions);
 input.addEventListener("input", setCharCount);
-sortSelect.addEventListener("change", fetchQuestions);
+sortButtons.forEach((button) => {
+  button.addEventListener("click", () => {
+    const sort = button.dataset.sort || "top";
+    if (sort === currentSort) return;
+    setSort(sort);
+    currentPage = 1;
+    fetchQuestions();
+  });
+});
+prevPageBtn.addEventListener("click", () => {
+  if (currentPage <= 1) return;
+  currentPage -= 1;
+  fetchQuestions();
+});
+nextPageBtn.addEventListener("click", () => {
+  currentPage += 1;
+  fetchQuestions();
+});
 
 adminLoginForm.addEventListener("submit", async (event) => {
   event.preventDefault();
@@ -253,6 +299,7 @@ adminClearBtn.addEventListener("click", async () => {
   if (!confirmClear) return;
   try {
     await adminClear();
+    currentPage = 1;
     await fetchQuestions();
   } catch (error) {
     setAdminStatus(error.message, true);
@@ -280,6 +327,7 @@ async function loadVersion() {
 }
 
 setCharCount();
+setSort(currentSort);
 fetchQuestions();
 startAutoRefresh();
 loadVersion();
