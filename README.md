@@ -2,6 +2,10 @@
 
 Simple Q&A voting app with a Node/Express backend and a static frontend.
 
+## Live App
+
+http://running-phoebe-esg-3rdeye-79b074ba.koyeb.app/
+
 ## Run
 
 1. Install deps:

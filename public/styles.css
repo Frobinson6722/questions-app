@@ -51,10 +51,17 @@ header h1 {
   max-width: 640px;
 }
 
-.version {
+.top-right-controls {
   position: absolute;
   top: 16px;
   right: 24px;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 8px;
+}
+
+.version {
   font-size: 12px;
   font-style: italic;
   color: #1f1c17;
