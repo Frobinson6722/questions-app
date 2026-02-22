@@ -236,7 +236,7 @@ button:focus-visible {
   position: absolute;
   border-radius: 50%;
   pointer-events: none;
-  animation: ripple-effect 550ms ease-out forwards;
+  animation: ripple-effect 1100ms ease-out forwards;
 }
 
 .vote[data-direction="up"] .ripple {
