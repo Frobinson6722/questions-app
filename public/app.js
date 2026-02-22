@@ -2,7 +2,6 @@ const form = document.getElementById("question-form");
 const input = document.getElementById("question-input");
 const list = document.getElementById("questions");
 const template = document.getElementById("question-item-template");
-const refreshBtn = document.getElementById("refresh-btn");
 const charCount = document.getElementById("char-count");
 const sortButtons = Array.from(document.querySelectorAll(".sort-chip"));
 const prevPageBtn = document.getElementById("prev-page-btn");
@@ -304,7 +303,6 @@ list.addEventListener("click", async (event) => {
   }
 });
 
-refreshBtn.addEventListener("click", fetchQuestions);
 input.addEventListener("input", setCharCount);
 sortButtons.forEach((button) => {
   button.addEventListener("click", () => {
