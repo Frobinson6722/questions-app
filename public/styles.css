@@ -225,6 +225,31 @@ button:focus-visible {
   justify-content: center;
   gap: 6px;
   box-shadow: none;
+  position: relative;
+  overflow: hidden;
+}
+
+.ripple {
+  position: absolute;
+  border-radius: 50%;
+  transform: scale(0);
+  animation: ripple-effect 600ms ease-out forwards;
+  pointer-events: none;
+}
+
+.vote[data-direction="up"] .ripple {
+  background: rgba(30, 110, 55, 0.3);
+}
+
+.vote[data-direction="down"] .ripple {
+  background: rgba(160, 40, 40, 0.3);
+}
+
+@keyframes ripple-effect {
+  to {
+    transform: scale(4);
+    opacity: 0;
+  }
 }
 
 .vote:disabled {

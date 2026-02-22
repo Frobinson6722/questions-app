@@ -26,6 +26,20 @@ let currentPage = 1;
 const pageSize = 20;
 let currentSort = "top";
 
+function createRipple(event, button) {
+  const rect = button.getBoundingClientRect();
+  const size = Math.max(rect.width, rect.height);
+  const x = event.clientX - rect.left - size / 2;
+  const y = event.clientY - rect.top - size / 2;
+  const ripple = document.createElement("span");
+  ripple.classList.add("ripple");
+  ripple.style.width = ripple.style.height = `${size}px`;
+  ripple.style.left = `${x}px`;
+  ripple.style.top = `${y}px`;
+  button.appendChild(ripple);
+  ripple.addEventListener("animationend", () => ripple.remove(), { once: true });
+}
+
 function setCharCount() {
   charCount.textContent = `${input.value.length} / 280`;
 }
@@ -198,6 +212,8 @@ list.addEventListener("click", async (event) => {
     try {
       const currentState = voteStates[id] || "none";
       if (direction === currentState) return;
+
+      createRipple(event, button);
 
       // Optimistic update: show new score immediately
       const scoreEl = item.querySelector(".score");
