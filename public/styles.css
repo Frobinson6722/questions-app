@@ -237,11 +237,11 @@ button:focus-visible {
 }
 
 .vote.pulse-up {
-  animation: pulseUp 300ms ease-out;
+  animation: pulseUp 550ms ease-out;
 }
 
 .vote.pulse-down {
-  animation: pulseDown 300ms ease-out;
+  animation: pulseDown 550ms ease-out;
 }
 
 @keyframes scoreUp {
@@ -257,15 +257,21 @@ button:focus-visible {
 }
 
 @keyframes pulseUp {
-  0% { transform: scale(1); }
-  50% { transform: scale(1.06); }
-  100% { transform: scale(1); }
+  0%   { transform: translateY(0) scale(1); }
+  25%  { transform: translateY(-14px) scale(1.08); }
+  50%  { transform: translateY(5px) scale(0.97); }
+  70%  { transform: translateY(-6px) scale(1.03); }
+  85%  { transform: translateY(2px) scale(0.99); }
+  100% { transform: translateY(0) scale(1); }
 }
 
 @keyframes pulseDown {
-  0% { transform: scale(1); }
-  50% { transform: scale(1.06); }
-  100% { transform: scale(1); }
+  0%   { transform: translateY(0) scale(1); }
+  25%  { transform: translateY(14px) scale(1.08); }
+  50%  { transform: translateY(-5px) scale(0.97); }
+  70%  { transform: translateY(6px) scale(1.03); }
+  85%  { transform: translateY(-2px) scale(0.99); }
+  100% { transform: translateY(0) scale(1); }
 }
 
 .vote[data-direction="up"] {
