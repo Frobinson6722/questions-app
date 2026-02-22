@@ -197,33 +197,38 @@ list.addEventListener("click", async (event) => {
     if (!direction) return;
     try {
       const currentState = voteStates[id] || "none";
-      if (direction === currentState) {
-        alert("You already voted that way for this question.");
-        return;
-      }
-      await vote(id, direction);
-      voteStates[id] = direction;
-      localStorage.setItem("voteStates", JSON.stringify(voteStates));
+      if (direction === currentState) return;
+
+      // Optimistic update: show new score immediately
       const scoreEl = item.querySelector(".score");
-      if (scoreEl) {
-        scoreEl.classList.remove("bump-up", "bump-down");
-        scoreEl.classList.add(direction === "up" ? "bump-up" : "bump-down");
-        scoreEl.addEventListener(
-          "animationend",
-          () => scoreEl.classList.remove("bump-up", "bump-down"),
-          { once: true }
-        );
-      }
-      button.classList.remove("pulse-up", "pulse-down");
-      button.classList.add(direction === "up" ? "pulse-up" : "pulse-down");
-      button.addEventListener(
+      const prevScore = parseInt(scoreEl.textContent, 10) || 0;
+      const delta = direction === "up" ? 1 : -1;
+      scoreEl.textContent = String(prevScore + delta);
+      scoreEl.classList.remove("bump-up", "bump-down");
+      scoreEl.classList.add(direction === "up" ? "bump-up" : "bump-down");
+      scoreEl.addEventListener(
         "animationend",
-        () => button.classList.remove("pulse-up", "pulse-down"),
+        () => scoreEl.classList.remove("bump-up", "bump-down"),
         { once: true }
       );
+
+      // Disable both buttons while in flight
+      const upBtn = item.querySelector('.vote[data-direction="up"]');
+      const downBtn = item.querySelector('.vote[data-direction="down"]');
+      if (upBtn) upBtn.disabled = true;
+      if (downBtn) downBtn.disabled = true;
+
+      const result = await vote(id, direction);
+      voteStates[id] = direction;
+      localStorage.setItem("voteStates", JSON.stringify(voteStates));
+
+      // Confirm with actual server value
+      scoreEl.textContent = String(result.votes);
+
       await fetchQuestions();
     } catch (error) {
       alert(error.message);
+      await fetchQuestions();
     }
     return;
   }
