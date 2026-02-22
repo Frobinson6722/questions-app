@@ -33,9 +33,14 @@ body {
   position: relative;
 }
 
+header {
+  text-align: center;
+  margin-bottom: 20px;
+}
+
 header h1 {
-  margin: 0 0 8px;
-  font-size: 44px;
+  margin: 0;
+  font-size: 36px;
   letter-spacing: -0.02em;
 }
 
