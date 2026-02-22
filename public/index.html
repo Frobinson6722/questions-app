@@ -10,13 +10,18 @@
     <main class="app">
       <header>
         <h1>Honest Questions</h1>
-        <p class="subtitle">
-          Have a question for leadership?
-        </p>
       </header>
-      <p class="anon-note">
-        All questions are 100% anonymous, so everyone can ask freely.
-      </p>
+      <div class="info-banner" role="note">
+        <span class="info-icon" aria-hidden="true">
+          <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+            <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-6h2v6zm0-8h-2V7h2v2z"/>
+          </svg>
+        </span>
+        <div>
+          <p class="info-title">Have a question for leadership?</p>
+          <p class="info-body">All questions are 100% anonymous, so everyone can ask freely.</p>
+        </div>
+      </div>
       <div class="top-right-controls">
         <div class="version" id="version-label">Loading...</div>
         <button id="refresh-btn" class="button-tonal" type="button">Refresh</button>
