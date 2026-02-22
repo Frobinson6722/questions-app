@@ -317,10 +317,14 @@ async function loadVersion() {
     const response = await fetch("/version");
     if (!response.ok) throw new Error("Version fetch failed");
     const data = await response.json();
-    const buildShort = data.build ? String(data.build).slice(0, 7) : "";
-    versionLabel.textContent = buildShort
-      ? `v${data.version} • ${buildShort}`
-      : `v${data.version}`;
+    if (data.startedAt) {
+      const date = new Date(data.startedAt);
+      const formatted = date.toLocaleString("en-US", {
+        month: "short", day: "numeric", year: "numeric",
+        hour: "numeric", minute: "2-digit", hour12: true,
+      });
+      versionLabel.textContent = `Updated ${formatted}`;
+    }
   } catch (error) {
     console.error(error);
   }

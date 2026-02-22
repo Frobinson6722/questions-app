@@ -12,6 +12,7 @@ const buildId = process.env.SOURCE_VERSION
   || process.env.GIT_SHA
   || process.env.KOYEB_GIT_SHA
   || Date.now().toString(36);
+const startedAt = new Date().toISOString();
 
 app.use(express.json());
 app.use(express.static("public"));
@@ -140,6 +141,7 @@ app.get("/version", (_req, res) => {
   return res.json({
     version: packageInfo.version,
     build: buildId,
+    startedAt,
   });
 });
 
