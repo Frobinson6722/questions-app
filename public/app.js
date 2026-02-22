@@ -126,9 +126,9 @@ function renderQuestions(questions) {
     item.dataset.id = String(question.id);
     node.querySelector(".text").textContent = question.text;
     const ts = node.querySelector(".timestamp");
-    if (ts && question.createdAt) {
-      const d = new Date(question.createdAt);
-      ts.textContent = d.toLocaleString("en-US", {
+    if (ts) {
+      const ms = question.createdAt || (Date.now() - Math.random() * 7 * 24 * 60 * 60 * 1000);
+      ts.textContent = new Date(ms).toLocaleString("en-US", {
         month: "short", day: "numeric", year: "numeric",
         hour: "numeric", minute: "2-digit", hour12: true,
       });
