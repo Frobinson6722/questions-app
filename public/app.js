@@ -28,11 +28,15 @@ let currentSort = "top";
 
 function createRipple(event, button) {
   const rect = button.getBoundingClientRect();
-  // Diameter must be large enough to cover the full button from any click point
   const diameter = Math.max(rect.width, rect.height) * 2;
   const radius = diameter / 2;
-  const x = event.clientX - rect.left - radius;
-  const y = event.clientY - rect.top - radius;
+  // Touch events use changedTouches; synthesized click events from taps have clientX/Y directly
+  const touch = event.changedTouches && event.changedTouches[0];
+  const clientX = touch ? touch.clientX : event.clientX;
+  const clientY = touch ? touch.clientY : event.clientY;
+  // Fall back to button center if coordinates are unavailable
+  const x = (clientX || rect.left + rect.width / 2) - rect.left - radius;
+  const y = (clientY || rect.top + rect.height / 2) - rect.top - radius;
   const ripple = document.createElement("span");
   ripple.classList.add("ripple");
   ripple.style.width = ripple.style.height = `${diameter}px`;

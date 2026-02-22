@@ -227,6 +227,9 @@ button:focus-visible {
   box-shadow: none;
   position: relative;
   overflow: hidden;
+  /* iOS Safari: forces overflow:hidden to actually clip border-radius children */
+  -webkit-mask-image: -webkit-radial-gradient(white, black);
+  mask-image: radial-gradient(white, black);
 }
 
 .ripple {
