@@ -232,22 +232,25 @@ button:focus-visible {
 .ripple {
   position: absolute;
   border-radius: 50%;
-  transform: scale(0);
-  animation: ripple-effect 600ms ease-out forwards;
   pointer-events: none;
+  animation: ripple-effect 550ms ease-out forwards;
 }
 
 .vote[data-direction="up"] .ripple {
-  background: rgba(30, 110, 55, 0.3);
+  background: rgba(25, 100, 50, 0.45);
 }
 
 .vote[data-direction="down"] .ripple {
-  background: rgba(160, 40, 40, 0.3);
+  background: rgba(150, 30, 30, 0.45);
 }
 
 @keyframes ripple-effect {
+  from {
+    transform: scale(0);
+    opacity: 1;
+  }
   to {
-    transform: scale(4);
+    transform: scale(1);
     opacity: 0;
   }
 }

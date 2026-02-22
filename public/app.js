@@ -28,12 +28,14 @@ let currentSort = "top";
 
 function createRipple(event, button) {
   const rect = button.getBoundingClientRect();
-  const size = Math.max(rect.width, rect.height);
-  const x = event.clientX - rect.left - size / 2;
-  const y = event.clientY - rect.top - size / 2;
+  // Diameter must be large enough to cover the full button from any click point
+  const diameter = Math.max(rect.width, rect.height) * 2;
+  const radius = diameter / 2;
+  const x = event.clientX - rect.left - radius;
+  const y = event.clientY - rect.top - radius;
   const ripple = document.createElement("span");
   ripple.classList.add("ripple");
-  ripple.style.width = ripple.style.height = `${size}px`;
+  ripple.style.width = ripple.style.height = `${diameter}px`;
   ripple.style.left = `${x}px`;
   ripple.style.top = `${y}px`;
   button.appendChild(ripple);
