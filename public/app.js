@@ -19,6 +19,7 @@ const adminSection = document.querySelector(".admin");
 const versionLabel = document.getElementById("version-label");
 
 let refreshTimer = null;
+let toastTimer = null;
 let isRefreshing = false;
 let adminToken = localStorage.getItem("adminToken");
 let voteStates = JSON.parse(localStorage.getItem("voteStates") || "{}");
@@ -46,13 +47,41 @@ function createRipple(event, button) {
   ripple.addEventListener("animationend", () => ripple.remove(), { once: true });
 }
 
+function showToast(message) {
+  const toast = document.getElementById("toast");
+  toast.textContent = message;
+  toast.classList.add("visible");
+  if (toastTimer) clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => toast.classList.remove("visible"), 2500);
+}
+
+function showSkeletons(count = 3) {
+  list.innerHTML = "";
+  for (let i = 0; i < count; i++) {
+    const li = document.createElement("li");
+    li.className = "question skeleton-card";
+    li.innerHTML = `
+      <div class="skeleton-text-block">
+        <div class="skeleton-line skeleton-line-long"></div>
+        <div class="skeleton-line skeleton-line-short"></div>
+      </div>
+      <div class="skeleton-actions-block">
+        <div class="skeleton-line skeleton-btn-block"></div>
+        <div class="skeleton-line skeleton-score-block"></div>
+        <div class="skeleton-line skeleton-btn-block"></div>
+      </div>`;
+    list.appendChild(li);
+  }
+}
+
 function setCharCount() {
   charCount.textContent = `${input.value.length} / 280`;
 }
 
-async function fetchQuestions() {
+async function fetchQuestions(withSkeletons = false) {
   if (isRefreshing) return;
   isRefreshing = true;
+  if (withSkeletons) showSkeletons();
   try {
     const query = new URLSearchParams({
       sort: currentSort,
@@ -193,14 +222,22 @@ form.addEventListener("submit", async (event) => {
   const text = input.value.trim();
   if (!text) return;
 
+  const submitBtn = form.querySelector('button[type="submit"]');
+  submitBtn.textContent = "Submitting…";
+  submitBtn.disabled = true;
+
   try {
     await submitQuestion(text);
     input.value = "";
     setCharCount();
     currentPage = 1;
+    showToast("Question submitted!");
     await fetchQuestions();
   } catch (error) {
     alert(error.message);
+  } finally {
+    submitBtn.textContent = "Submit";
+    submitBtn.disabled = false;
   }
 });
 
@@ -278,14 +315,16 @@ sortButtons.forEach((button) => {
     fetchQuestions();
   });
 });
-prevPageBtn.addEventListener("click", () => {
+prevPageBtn.addEventListener("click", async () => {
   if (currentPage <= 1) return;
   currentPage -= 1;
-  fetchQuestions();
+  await fetchQuestions(true);
+  list.scrollIntoView({ behavior: "smooth", block: "start" });
 });
-nextPageBtn.addEventListener("click", () => {
+nextPageBtn.addEventListener("click", async () => {
   currentPage += 1;
-  fetchQuestions();
+  await fetchQuestions(true);
+  list.scrollIntoView({ behavior: "smooth", block: "start" });
 });
 
 adminLoginForm.addEventListener("submit", async (event) => {
@@ -359,6 +398,6 @@ async function loadVersion() {
 
 setCharCount();
 setSort(currentSort);
-fetchQuestions();
+fetchQuestions(true);
 startAutoRefresh();
 loadVersion();
