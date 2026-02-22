@@ -125,6 +125,14 @@ function renderQuestions(questions) {
     const item = node.querySelector(".question");
     item.dataset.id = String(question.id);
     node.querySelector(".text").textContent = question.text;
+    const ts = node.querySelector(".timestamp");
+    if (ts && question.createdAt) {
+      const d = new Date(question.createdAt);
+      ts.textContent = d.toLocaleString("en-US", {
+        month: "short", day: "numeric", year: "numeric",
+        hour: "numeric", minute: "2-digit", hour12: true,
+      });
+    }
     node.querySelector(".score").textContent = String(question.votes);
     const currentState = voteStates[question.id] || "none";
     const upBtn = node.querySelector('.vote[data-direction="up"]');
